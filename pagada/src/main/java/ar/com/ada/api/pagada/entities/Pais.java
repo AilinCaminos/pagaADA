@@ -3,8 +3,6 @@ package ar.com.ada.api.pagada.entities;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
-@Entity
-@Table(name = "pais")
 public class Pais {
 
     public enum TipoIdImpositivoEnum {
