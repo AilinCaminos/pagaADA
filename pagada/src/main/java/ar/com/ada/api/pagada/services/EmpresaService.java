@@ -29,10 +29,10 @@ public class EmpresaService {
 
     }
 
-    public List<Empresa> listarEmpresas(){
-        
+    public List<Empresa> listarEmpresas() {
+
         return empresaRepository.findAll();
-        
+
     }
 
 }

@@ -3,9 +3,9 @@ package ar.com.ada.api.pagada.repositories;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import ar.com.ada.api.pagada.entities.Empresa;
+import ar.com.ada.api.pagada.entities.Deudor;
 
 @Repository
-public interface EmpresaRepository extends JpaRepository<Empresa, Integer> {
+public interface DeudorRepository extends JpaRepository<Deudor, Integer> {
 
 }

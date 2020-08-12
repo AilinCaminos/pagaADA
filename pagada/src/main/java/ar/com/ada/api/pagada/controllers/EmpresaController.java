@@ -16,25 +16,25 @@ import ar.com.ada.api.pagada.services.EmpresaService;
 
 @RestController
 public class EmpresaController {
-    
-    /*
-    Crear/Obtener empresas
 
-	GET /api/empresas
-	POST /api/empresas
-    */
+    /*
+     * Crear/Obtener empresas
+     * 
+     * GET /api/empresas POST /api/empresas
+     */
 
     @Autowired
     EmpresaService empresaService;
 
     @PostMapping("/api/empresas")
-    public ResponseEntity<GenericResponse> crearEmpresa(@RequestBody EmpresaRequest empReq){
-        
+    public ResponseEntity<GenericResponse> crearEmpresa(@RequestBody EmpresaRequest empReq) {
+
         GenericResponse r = new GenericResponse();
 
-        Empresa empresa = empresaService.crearEmpresa(empReq.paisId,empReq.tipoIdImpositivo,empReq.idImpositivo,empReq.nombre);
+        Empresa empresa = empresaService.crearEmpresa(empReq.paisId, empReq.tipoIdImpositivo, empReq.idImpositivo,
+                empReq.nombre);
 
-        if(empresa.getEmpresaId() != null){
+        if (empresa.getEmpresaId() != null) {
 
             r.isOk = true;
             r.id = empresa.getEmpresaId();
@@ -51,9 +51,10 @@ public class EmpresaController {
     }
 
     @GetMapping("/api/empresas")
-    public ResponseEntity<List<Empresa>> listarEmpresas(){
+    public ResponseEntity<List<Empresa>> listarEmpresas() {
 
         return ResponseEntity.ok(empresaService.listarEmpresas());
-        
+
     }
+
 }
