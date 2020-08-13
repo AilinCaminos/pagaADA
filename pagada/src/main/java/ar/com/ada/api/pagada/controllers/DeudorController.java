@@ -13,6 +13,7 @@ import ar.com.ada.api.pagada.entities.Deudor;
 import ar.com.ada.api.pagada.models.request.DeudorRequest;
 import ar.com.ada.api.pagada.models.response.GenericResponse;
 import ar.com.ada.api.pagada.services.DeudorService;
+import ar.com.ada.api.pagada.services.DeudorService.DeudorValidacionEnum;
 
 @RestController
 public class DeudorController {
@@ -31,13 +32,26 @@ public class DeudorController {
 
         GenericResponse r = new GenericResponse();
 
-        Deudor deudor = deudorService.crearDeudor(deuReq.paisId, deuReq.tipoIdImpositivo, deuReq.idImpositivo,
-                deuReq.nombre);
+        Deudor deu = new Deudor();
+        deu.setPaisId(deuReq.paisId);
+        deu.setTipoIdImpositivo(deuReq.tipoIdImpositivo);
+        deu.setIdImpositivo(deuReq.idImpositivo);
+        deu.setNombre(deuReq.nombre);
 
-        if (deudor.getDeudorId() != null) {
+        DeudorValidacionEnum resultadoValidacion = deudorService.validarEmpresa(deu);
+        if (resultadoValidacion != DeudorValidacionEnum.OK) {
+            r.isOk = false;
+            r.message = "No se pudo validar la empresa " + resultadoValidacion.toString();
+
+            return ResponseEntity.badRequest().body(r); // http 400
+        }
+
+        deudorService.crearDeudor(deu);
+
+        if (deu.getDeudorId() != null) {
 
             r.isOk = true;
-            r.id = deudor.getDeudorId();
+            r.id = deu.getDeudorId();
             r.message = "Se creo el deudor con exito.";
 
             return ResponseEntity.ok(r);

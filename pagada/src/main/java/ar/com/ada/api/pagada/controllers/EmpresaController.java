@@ -13,6 +13,7 @@ import ar.com.ada.api.pagada.entities.Empresa;
 import ar.com.ada.api.pagada.models.request.EmpresaRequest;
 import ar.com.ada.api.pagada.models.response.GenericResponse;
 import ar.com.ada.api.pagada.services.EmpresaService;
+import ar.com.ada.api.pagada.services.EmpresaService.EmpresaValidacionEnum;
 
 @RestController
 public class EmpresaController {
@@ -31,20 +32,33 @@ public class EmpresaController {
 
         GenericResponse r = new GenericResponse();
 
-        Empresa empresa = empresaService.crearEmpresa(empReq.paisId, empReq.tipoIdImpositivo, empReq.idImpositivo,
-                empReq.nombre);
+        Empresa emp = new Empresa();
+        emp.setPaisId(empReq.paisId);
+        emp.setTipoIdImpositivo(empReq.tipoIdImpositivo);
+        emp.setIdImpositivo(empReq.idImpositivo);
+        emp.setNombre(empReq.nombre);
 
-        if (empresa.getEmpresaId() != null) {
+        EmpresaValidacionEnum resultadoValidacion = empresaService.validarEmpresa(emp);
+        if (resultadoValidacion != EmpresaValidacionEnum.OK) {
+            r.isOk = false;
+            r.message = "No se pudo validar la empresa " + resultadoValidacion.toString();
+
+            return ResponseEntity.badRequest().body(r); // http 400
+        }
+
+        empresaService.crearEmpresa(emp);
+
+        if (emp.getEmpresaId() != null) {
 
             r.isOk = true;
-            r.id = empresa.getEmpresaId();
+            r.id = emp.getEmpresaId();
             r.message = "La empresa se creo con exito.";
 
             return ResponseEntity.ok(r);
         }
 
         r.isOk = false;
-        r.message = "Ocurrio un error. No se pudo crear la empresa.";
+        r.message = "Ocurrio un error. No se pudo crear la empresa. ";
 
         return ResponseEntity.badRequest().body(r);
 
