@@ -10,17 +10,17 @@ public class TipoServicio {
 
     @Id
     @Column(name = "tipo_servicio_id")
-    private Integer TipoServicioId;
+    private Integer tipoServicioId;
     private String nombre;
     @OneToMany(mappedBy = "tipoServicio", cascade = CascadeType.ALL)
     private List<Servicio> serviciosEmitidos = new ArrayList<>();
 
     public Integer getTipoServicioId() {
-        return TipoServicioId;
+        return tipoServicioId;
     }
 
     public void setTipoServicioId(Integer tipoServicioId) {
-        TipoServicioId = tipoServicioId;
+        this.tipoServicioId = tipoServicioId;
     }
 
     public String getNombre() {
