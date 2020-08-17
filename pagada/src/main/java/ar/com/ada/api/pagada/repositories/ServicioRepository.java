@@ -26,4 +26,6 @@ public interface ServicioRepository extends JpaRepository<Servicio, Integer> {
     @Query("Select s from Servicio where s.codigoBarras = :codigoBarras")
     List<Servicio> findAllByCodigoBarras(String codigoBarras);
 
+    Servicio findByServicioId(Integer servicioId);
+
 }

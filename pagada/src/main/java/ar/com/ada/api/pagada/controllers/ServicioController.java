@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -12,8 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import ar.com.ada.api.pagada.entities.Deudor;
 import ar.com.ada.api.pagada.entities.Empresa;
+import ar.com.ada.api.pagada.entities.OperacionPago;
 import ar.com.ada.api.pagada.entities.Servicio;
 import ar.com.ada.api.pagada.entities.TipoServicio;
+import ar.com.ada.api.pagada.models.request.InfoPagoRequest;
 import ar.com.ada.api.pagada.models.request.ServicioRequest;
 import ar.com.ada.api.pagada.models.response.GenericResponse;
 import ar.com.ada.api.pagada.services.DeudorService;
@@ -36,7 +39,7 @@ public class ServicioController {
      */
 
     @PostMapping("/api/servicios")
-    public ResponseEntity<GenericResponse> crearServicio(@RequestBody ServicioRequest servReq){
+    public ResponseEntity<GenericResponse> crearServicio(@RequestBody ServicioRequest servReq) {
 
         GenericResponse r = new GenericResponse();
 
@@ -66,7 +69,7 @@ public class ServicioController {
 
         servicioService.crearServicio(servicio);
 
-        if(servicio.getServicioId() != null){
+        if (servicio.getServicioId() != null) {
 
             r.isOk = true;
             r.id = servicio.getServicioId();
@@ -93,22 +96,83 @@ public class ServicioController {
 
     @GetMapping("/api/servicios")
     public ResponseEntity<List<Servicio>> listarServicios(
-        @RequestParam(name = "empresa", required = false) Integer empresaId,
-        @RequestParam(name = "deudor", required = false) Integer deudorId,
-        @RequestParam(name = "historico", required = false) boolean historico,
-        @RequestParam(name = "codigo", required = false) String codigoBarras){
-        
-            if(codigoBarras != null){
-                return ResponseEntity.ok(servicioService.listarServiciosPorCodigoDeBarras(codigoBarras));
-            }else if(empresaId == null){
-                return ResponseEntity.ok(servicioService.listarServicios());
-            }else if(deudorId == null){
-                return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaId(empresaId));
-            }else if(historico){
-                return ResponseEntity.ok(servicioService.listarHistoricoServiciosPorEmpresaIdYDeudorId(empresaId, deudorId));
-            }
-            return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaIdYDeudorId(empresaId, deudorId));
+            @RequestParam(name = "empresa", required = false) Integer empresaId,
+            @RequestParam(name = "deudor", required = false) Integer deudorId,
+            @RequestParam(name = "historico", required = false) boolean historico,
+            @RequestParam(name = "codigo", required = false) String codigoBarras) {
+
+        if (codigoBarras != null) {
+            return ResponseEntity.ok(servicioService.listarServiciosPorCodigoDeBarras(codigoBarras));
+        } else if (empresaId == null) {
+            return ResponseEntity.ok(servicioService.listarServicios());
+        } else if (deudorId == null) {
+            return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaId(empresaId));
+        } else if (historico) {
+            return ResponseEntity
+                    .ok(servicioService.listarHistoricoServiciosPorEmpresaIdYDeudorId(empresaId, deudorId));
+        }
+        return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaIdYDeudorId(empresaId, deudorId));
 
     }
+
+    /**
+         * Pagar Servicio:
+	    POST /api/servicios/{id}: paga un servicio especifico con el siguiente Payload(RequestBody):
+		{
+		  "importePagado": 3999.00,
+                  "fechaPago": "2020-05-06",
+	          "medioPago": "TRANSFERENCIA", //TARJETA, DEPOSITO, ETC
+	          "infoMedioPago": "nroTarjeta/cbu/etc"
+		}
+         */
+
+    @PostMapping("/api/servicios/{id}")
+    public ResponseEntity<GenericResponse> pagarServicio(@PathVariable Integer id, @RequestBody InfoPagoRequest pago) {
+
+        GenericResponse r = new GenericResponse();
+
+        OperacionPago resultadoPago = servicioService.realizarPago(id, pago.importePagado, pago.moneda, pago.fechaPago,
+                pago.medioPago, pago.infoMedioPago);
+
+        switch (resultadoPago.getResultado()) {
+            case RECHAZADO_NO_ACEPTA_PAGO_PARCIAL:
+
+                r.isOk = false;
+                r.message = "No acepta pago parcial";
+
+                return ResponseEntity.badRequest().body(r);
+
+            case RECHAZADO_SERVICIO_INEXISTENTE:
+
+                r.isOk = false;
+                r.message = "Servicio inexistente";
+
+                return ResponseEntity.badRequest().body(r);
+
+            case RECHAZADO_SERVICIO_YA_PAGO:
+
+                r.isOk = false;
+                r.message = "Servicio ya pago";
+
+                return ResponseEntity.badRequest().body(r);
+
+            case ERROR_INESPERADO:
+
+                r.isOk = false;
+                r.message = "Error inesperado";
+
+                return ResponseEntity.badRequest().body(r);
+
+            case REALIZADO:
+
+                r.isOk = true;
+                r.id = resultadoPago.getPago().getPagoId();
+                r.message = "se realizo el pago con exito";
+                return ResponseEntity.ok(r);
+        }
+
+        return ResponseEntity.badRequest().build();
+    }
+
 
 }
