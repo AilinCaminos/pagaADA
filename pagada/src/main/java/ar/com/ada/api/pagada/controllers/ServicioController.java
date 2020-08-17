@@ -1,9 +1,13 @@
 package ar.com.ada.api.pagada.controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.com.ada.api.pagada.entities.Deudor;
@@ -76,4 +80,35 @@ public class ServicioController {
 
         return ResponseEntity.badRequest().body(r);
     }
+    
+    /**
+    * Obtener servicios:
+    *
+    * GET /api/servicios : obtiene todos los servicios.
+	* GET /api/servicios?empresa=999 : obtiene todos los servicios PENDIENTES de una empresa especifica Formato JSon Esperado: List<Servicio>
+	* GET /api/servicios?empresa=999&deudor=888: obtiene todos los servicios PENDIENTES de una empresa y un deudor Formato JSon Esperado: List<Servicio>
+	* GET /api/servicios?empresa=999&deudor=888&historico=true: obtiene todos los servicios de una empresa y un deudor(pagados, anulados o pendientes, o sea todos)
+	* GET /api/servicios?codigo=AAAAAAA : obtiene un servicio en particular usando el codigo de Barras.
+    */
+
+    @GetMapping("/api/servicios")
+    public ResponseEntity<List<Servicio>> listarServicios(
+        @RequestParam(name = "empresa", required = false) Integer empresaId,
+        @RequestParam(name = "deudor", required = false) Integer deudorId,
+        @RequestParam(name = "historico", required = false) boolean historico,
+        @RequestParam(name = "codigo", required = false) String codigoBarras){
+        
+            if(codigoBarras != null){
+                return ResponseEntity.ok(servicioService.listarServiciosPorCodigoDeBarras(codigoBarras));
+            }else if(empresaId == null){
+                return ResponseEntity.ok(servicioService.listarServicios());
+            }else if(deudorId == null){
+                return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaId(empresaId));
+            }else if(historico){
+                return ResponseEntity.ok(servicioService.listarHistoricoServiciosPorEmpresaIdYDeudorId(empresaId, deudorId));
+            }
+            return ResponseEntity.ok(servicioService.listarServiciosPendientesPorEmpresaIdYDeudorId(empresaId, deudorId));
+
+    }
+
 }
