@@ -15,6 +15,7 @@ import ar.com.ada.api.pagada.entities.TipoServicio;
 import ar.com.ada.api.pagada.entities.OperacionPago.OperacionPagoEnum;
 import ar.com.ada.api.pagada.entities.Pago.MedioPagoEnum;
 import ar.com.ada.api.pagada.entities.Servicio.EstadoEnum;
+import ar.com.ada.api.pagada.repositories.PagoRepository;
 import ar.com.ada.api.pagada.repositories.ServicioRepository;
 import ar.com.ada.api.pagada.repositories.TipoServicioRepository;
 
@@ -25,6 +26,9 @@ public class ServicioService {
     TipoServicioRepository tServicioRepository;
     @Autowired
     ServicioRepository servicioRepository;
+    @Autowired
+    PagoRepository pagoRepository;
+    
 
     public boolean crearTipoServicio(TipoServicio tipo) {
 
@@ -189,6 +193,9 @@ public class ServicioService {
 
     }
 
+	public Pago buscarPagoPorId(Integer pagoId){
+		return pagoRepository.findByPagoId(pagoId);
+	}
 
 
 }

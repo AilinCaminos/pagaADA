@@ -89,4 +89,16 @@ public class Pago {
         this.moneda = moneda;
     }
 
+    public String ofuscarInfoMedioPago(){
+    
+        String newInfo = new String();
+
+        for (int i = (this.getInfoMedioPago().length()-1); i > (this.getInfoMedioPago().length()-4); i--) {
+            newInfo = this.getInfoMedioPago().charAt(i) + newInfo;
+        }
+
+        return "*" + newInfo;
+
+    }
+
 }
