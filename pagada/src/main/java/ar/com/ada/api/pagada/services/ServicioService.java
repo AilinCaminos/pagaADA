@@ -49,7 +49,7 @@ public class ServicioService {
 
     public Servicio crearServicio(Servicio servicio) {
 
-        return servicioRepository.save(servicio);
+        return grabar(servicio);
 
     }
 
@@ -63,7 +63,7 @@ public class ServicioService {
         return null;
     }
 
-    public ServicioValidacionEnum validacionServicio(Servicio servicio) {
+    public ServicioValidacionEnum validarServicio(Servicio servicio) {
 
         if (servicio.getImporte().compareTo(new BigDecimal(0)) <= 0) {
             return ServicioValidacionEnum.IMPORTE_INVALIDO;
@@ -203,6 +203,15 @@ public class ServicioService {
 
 	public List<Pago> buscarPagosPorDeudorId(Integer deudorId) {
 		return pagoRepository.findAllByDeudorId(deudorId);
+	}
+
+	public Servicio grabar(Servicio servicio) {
+
+        if (this.validarServicio(servicio) != ServicioValidacionEnum.OK)
+        return servicio;
+
+        return servicioRepository.save(servicio);
+
 	}
 
 
