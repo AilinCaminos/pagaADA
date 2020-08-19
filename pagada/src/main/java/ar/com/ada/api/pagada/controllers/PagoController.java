@@ -1,9 +1,14 @@
 package ar.com.ada.api.pagada.controllers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import ar.com.ada.api.pagada.entities.Pago;
@@ -65,4 +70,66 @@ public class PagoController {
         return ResponseEntity.ok(pagoR);
 
     }
+
+    /*
+        Obtener servicios pagados:
+    	GET /api/pagos?empresa=9999
+	    GET /api/pagos?deudor=383838
+
+        Formato esperado(array de items):
+        [
+		    {
+	            "empresa_id": 92222,
+	            "nombre_empresa": "NombreEmpresa",
+		        "deudor_id": 3393,
+                "nombre_deudor": "Nombre del deudor",
+		        "comprobanteDePago": 9999, <- es el id de Pago
+                "fecha": "2020-06-20", <- Fecha de pago
+		        "importePagado": 393993,
+		        "medioPago": transferencia
+		        "infoMedioPago": debera devolver asi: "*123", donde "123" son los ultimos 3 digitos del medio de pago.
+		    },
+		    ...
+        ]
+		   
+	NOTA esos son los unicos metodos que puede soportar, si usa GET /api/pagos debe dar un HTTP Status 401
+    */
+
+    @GetMapping("/api/pagos")
+    public ResponseEntity<List<PagoResponse>> listarPagos(
+            @RequestParam(name = "empresa", required = false) Integer empresa,
+            @RequestParam(name = "deudor", required = false) Integer deudor) {
+
+        List<PagoResponse> pagosR = new ArrayList<>();
+        List<Pago> pagos = new ArrayList<>();
+
+        if(empresa != null && deudor == null){
+            pagos = servicioService.buscarPagosPorEmpresaId(empresa);
+        } else if (empresa == null && deudor != null){
+            pagos = servicioService.buscarPagosPorDeudorId(deudor);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    
+        for (Pago pago : pagos) {
+            PagoResponse pagoR = new PagoResponse();
+
+            pagoR.empresaId = pago.getServicio().getEmpresa().getEmpresaId();
+            pagoR.nombreEmpresa = pago.getServicio().getEmpresa().getNombre();
+            pagoR.deudorId = pago.getServicio().getDeudor().getDeudorId();
+            pagoR.nombreDeudor = pago.getServicio().getDeudor().getNombre();
+            pagoR.comprobanteDePago = pago.getPagoId();
+            pagoR.fecha = pago.getFechaPago();
+            pagoR.importePagado = pago.getImportePagado();
+            pagoR.medioPago = pago.getMedioPago();
+            pagoR.infoMedioPago = pago.ofuscarInfoMedioPago();
+
+            pagosR.add(pagoR);
+
+        }
+
+        return ResponseEntity.ok(pagosR);
+
+    }
+
 }

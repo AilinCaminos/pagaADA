@@ -197,5 +197,13 @@ public class ServicioService {
 		return pagoRepository.findByPagoId(pagoId);
 	}
 
+	public List<Pago> buscarPagosPorEmpresaId(Integer empresaId) {
+		return pagoRepository.findAllByEmpresaId(empresaId);
+	}
+
+	public List<Pago> buscarPagosPorDeudorId(Integer deudorId) {
+		return pagoRepository.findAllByDeudorId(deudorId);
+	}
+
 
 }
